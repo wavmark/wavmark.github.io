@@ -12,11 +12,11 @@ In this demo， the first 16 bits are used as the pattern to determine the prese
 
 **add watermark**
 
-`python 1_wavmark.py --input=<Host Audio Path> --output=<Output Path> --watermark=0010101010100111`
+`python wavmark.py --input=<Host Audio Path> --output=<Output Path> --watermark=0010101010100111`
 
 for example：
 
-`python 1_wavmark.py --input=data/1_librispeech_8s.wav --output=out.wav --watermark=0010101010100111`
+`python wavmark.py --input=data/1_librispeech_8s.wav --output=out.wav --watermark=0010101010100111`
 
 
 
@@ -35,8 +35,6 @@ array_str = "".join([str(i) for i in array])
 
 **decode watermark**
 
-`python 1_wavmark.py --mode=extract --input=<Your Audio Path>`
+`python wavmark.py --mode=extract --input=<Your Audio Path>`
 
 
-
-​	

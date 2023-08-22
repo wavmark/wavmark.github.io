@@ -55,7 +55,7 @@
             box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
         }
 
-        .topper{
+        .topper {
             font-size: small;
         }
 
@@ -70,7 +70,8 @@
             WavMark: Watermarking for Audio Generation
         </h1>
         <div>
-            Guangyu Chen<sup>†</sup>, Yu Wu<sup>‡</sup>, Shujie Liu<sup>‡</sup>, Tao Liu<sup>†</sup>, Xiaoyong Du<sup>†</sup>, Furu Wei<sup>‡</sup>
+            Guangyu Chen<sup>†</sup>, Yu Wu<sup>‡</sup>, Shujie Liu<sup>‡</sup>, Tao Liu<sup>†</sup>, Xiaoyong
+            Du<sup>†</sup>, Furu Wei<sup>‡</sup>
         </div>
         <div>
             <div>
@@ -79,6 +80,11 @@
             <div>
                 Renmin University of China<sup>†</sup>
             </div>
+        </div>
+
+        <div style="margin-top: 1em">
+<!--            Code is available: -->
+            <a :href="code_url">{{code_url}}</a>
         </div>
     </div>
 
@@ -178,6 +184,7 @@
         data: {
             items: data_list,
             items2: datalist2,
+            code_url: "https://github.com/wavmark/wavmark.github.io",
         },
         methods: {
             myToFixed(v) {
