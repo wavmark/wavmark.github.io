@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="data.js"></script>
+    <style>
+        tr {
+            line-height: 40px;
+        }
+
+        .table_wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /*height: 100vh; !* Optional: Set a specific height for centering vertically *!*/
+        }
+
+        /* 使用 margin 来增加列间距 */
+        table {
+            border-collapse: collapse; /* 合并表格边框 */
+        }
+
+        td, th {
+            margin: 10px; /* 增加列间距 */
+            padding: 10px; /* 增加内容内边距 */
+        }
+
+        /*文字列内居中*/
+        th, td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .title_area {
+            text-align: center;
+        }
+
+        .img_structure {
+            width: 800px;
+            max-width: 60vw;
+        }
+
+        .card {
+            text-align: center;
+            margin: 2em;
+            padding: 2em;
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        }
+
+        .card2 {
+            margin: 2em;
+            padding: 2em;
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        }
+
+        .topper{
+            font-size: small;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div id="app">
+    <div class="title_area">
+        <h1>
+            WavMark: Watermarking for Audio Generation
+        </h1>
+        <div>
+            Guangyu Chen<sup>†</sup>, Yu Wu<sup>‡</sup>, Shujie Liu<sup>‡</sup>, Tao Liu<sup>†</sup>, Xiaoyong Du<sup>†</sup>, Furu Wei<sup>‡</sup>
+        </div>
+        <div>
+            <div>
+                Microsoft Research Asia<sup>‡</sup>
+            </div>
+            <div>
+                Renmin University of China<sup>†</sup>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Framework Overview</h2>
+        <img class="img_structure" src="./imgs/structure.png">
+        <div style="text-align: left">
+            During the encoding phase, we iteratively embed a 1-second watermark section into the host audio, ensuring
+            the entire time domain protection.
+            Since the watermarked audio may be clipped,
+            in the decoding process, we need to determine the watermark position.
+            To address this issue, we made our model to be shift-invariant, allowing for a maximum misalignment of 0.1
+            seconds in the decoding position.
+            This characteristic enables us to efficiently apply a Brute Force Detection (BFD) strategy for decoding.
+            Specifically, the encoded message is composed of pattern bits and payload bits. When decoding, we utilize a
+            decoding window with a sliding step of 0.05 seconds to attempt decoding continuously.
+            Then, the correct watermark results are identified by checking with the predefined pattern bits.
+        </div>
+    </div>
+
+    <div class="card2">
+        <h2>Imperceptibility on Synthetic Data</h2>
+        <div class="table_wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Dataset</th>
+                    <th>Host Audio</th>
+                    <th>Watermarked Audio</th>
+                    <th>SNR</th>
+                    <th>PESQ</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="i in items2">
+                    <td>{{i.dataset}}</td>
+                    <td>
+                        <audio controls>
+                            <source :src="'data/'+i.origin" type="audio/wav">
+                        </audio>
+                    </td>
+                    <td>
+                        <audio controls>
+                            <source :src="'data/'+i.wmd" type="audio/wav">
+                        </audio>
+                    </td>
+                    <td>{{myToFixed(i.snr)}}</td>
+                    <td>{{myToFixed(i.pesq)}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div class="card2">
+        <h2>Imperceptibility on Real Data</h2>
+
+        <div class="table_wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Dataset</th>
+                    <th>Host Audio</th>
+                    <th>Watermarked Audio</th>
+                    <th>SNR</th>
+                    <th>PESQ</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="i in items">
+                    <td>{{i.dataset}}</td>
+                    <td>
+                        <audio controls>
+                            <source :src="'data/'+i.origin" type="audio/wav">
+                        </audio>
+                    </td>
+                    <td>
+                        <audio controls>
+                            <source :src="'data/'+i.wmd" type="audio/wav">
+                        </audio>
+                    </td>
+                    <td>{{myToFixed(i.snr)}}</td>
+                    <td>{{myToFixed(i.pesq)}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            items: data_list,
+            items2: datalist2,
+        },
+        methods: {
+            myToFixed(v) {
+                try {
+                    return v.toFixed(2)
+                } catch (e) {
+                    return v
+                }
+            }
+
+        }
+    })
+</script>
+
+</body>
+</html>
