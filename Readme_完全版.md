@@ -27,3 +27,38 @@ array_str = "".join([str(i) for i in array])
 
 `python wavmark.py --mode=extract --input=<the watermarked audio>`
 
+
+
+
+
+## Theory
+
+
+
+The first 16 bits are used as pattern to determine the presence of the watermark（probability of error detection：1/(2^16)=0.0015%).  The remaining 16 bits are used as the payload ( defined by `--watermark= ` )
+
+
+
+
+
+
+
+## Application 2: Verification
+
+如果你只想来判断一段声音是否包含水印，那么这是一个更有效的工具。在这个demo中，你需要指定全部的32bit信息，随后在解码时，工具会提供是水印的概率值
+
+
+
+
+
+
+
+
+
+
+
+## Citation
+
+```
+```
+

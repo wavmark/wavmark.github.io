@@ -3,6 +3,7 @@
 wandb/
 .DS_Store
 tmp.py
+Readme_完全版.md
 
 # Logs
 logs
