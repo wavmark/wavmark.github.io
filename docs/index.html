@@ -6,6 +6,13 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="data.js"></script>
     <style>
+        #app {
+            /*display: flex;*/
+            /*flex-direction: column;*/
+            /*align-items: center;*/
+            /*align-items: stretch;*/
+        }
+
         tr {
             line-height: 40px;
         }
@@ -38,7 +45,7 @@
         }
 
         .img_structure {
-            width: 800px;
+            width: 1000px;
             max-width: 60vw;
         }
 
@@ -47,6 +54,7 @@
             margin: 2em;
             padding: 2em;
             box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+            /*max-width: 1600px;*/
         }
 
         .card2 {
@@ -83,25 +91,27 @@
         </div>
 
         <div style="margin-top: 1em">
-<!--            Code is available: -->
-            <a :href="code_url">{{code_url}}</a>
+            DEMO: <a :href="code_url">{{code_url}}</a>
         </div>
     </div>
 
     <div class="card">
         <h2>Framework Overview</h2>
-        <img class="img_structure" src="./imgs/structure.png">
+        <img class="img_structure" src="./imgs/structure_v2.png">
         <div style="text-align: left">
-            During the encoding phase, we iteratively embed a 1-second watermark section into the host audio, ensuring
-            the entire time domain protection.
-            Since the watermarked audio may be clipped,
-            in the decoding process, we need to determine the watermark position.
-            To address this issue, we made our model to be shift-invariant, allowing for a maximum misalignment of 0.1
-            seconds in the decoding position.
-            This characteristic enables us to efficiently apply a Brute Force Detection (BFD) strategy for decoding.
-            Specifically, the encoded message is composed of pattern bits and payload bits. When decoding, we utilize a
-            decoding window with a sliding step of 0.05 seconds to attempt decoding continuously.
-            Then, the correct watermark results are identified by checking with the predefined pattern bits.
+            Recent breakthroughs in zero-shot voice synthesis have enabled imitating a speaker’s voice using just a few
+            seconds of recording while maintaining a high level of realism. Alongside its potential benefits, this
+            powerful technology introduces notable risks, including voice fraud and speaker impersonation. Unlike the
+            conventional approach of solely relying on passive methods for detecting synthetic data, watermarking
+            presents a proactive and robust defence mechanism against these looming risks. This paper introduces an
+            innovative audio watermarking framework that encodes up to 32 bits of watermark within a mere 1-second audio
+            snippet. The watermark is imperceptible to human senses and exhibits strong resilience against various
+            attacks. It can serve as an effective identifier for synthesized voices and holds potential for broader
+            applications in audio copyright protection. Moreover, this framework boasts high flexibility, allowing for
+            the combination of multiple watermark segments to achieve heightened robustness and expanded capacity.
+            Utilizing 10 to 20-second audio as the host, our approach demonstrates an average Bit Error Rate (BER) of
+            0.48% across ten common attacks, a remarkable reduction of over 2800% in BER compared to the
+            state-of-the-art watermarking tool.
         </div>
     </div>
 
