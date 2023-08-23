@@ -3,7 +3,6 @@
 Our model enables encoding 32 bits of information into 1-second audio while maintaining high inaudibility and robustness. Here we provide a demo to showcase the most basic application.
 
 
-
 ## Add Watermark
 
 add 16 bit watermark into the in.wav file: 
@@ -26,4 +25,10 @@ array_str = "".join([str(i) for i in array])
 ## Decode Watermark
 
 `python wavmark.py --mode=extract --input=<the watermarked audio>`
+
+
+## Install
+1.clone this project
+
+2.pip install -r requirements.txt
 

@@ -2,17 +2,12 @@ import os
 import soundfile
 import librosa
 import resampy
+import numpy as np
 
 
 def is_wav_file(filename):
-    # 获取文件扩展名
     file_extension = os.path.splitext(filename)[1]
-
-    # 判断文件扩展名是否为'.wav'或'.WAV'
     return file_extension.lower() == ".wav"
-
-
-import numpy as np
 
 
 def read_as_single_channel_16k(audio_file, def_sr, verbose=True, aim_second=None):
@@ -27,14 +22,14 @@ def read_as_single_channel_16k(audio_file, def_sr, verbose=True, aim_second=None
     else:
         raise Exception("unsupported file:" + file_extension)
 
-    # 通道数
+    # channel check
     if len(data.shape) == 2:
         left_channel = data[:, 0]
         if verbose:
             print("Warning! the input audio has multiple chanel, this tool only use the first channel!")
         data = left_channel
 
-    # 采样率
+    # sample rate check
     if origin_sr != def_sr:
         data = resampy.resample(data, origin_sr, def_sr)
         if verbose:
@@ -59,14 +54,13 @@ def read_as_single_channel_16k(audio_file, def_sr, verbose=True, aim_second=None
 
 def read_as_single_channel(file, aim_sr):
     if file.endswith(".mp3"):
-        data, sr = librosa.load(file, sr=aim_sr)  # 这里默认就是会转换为输入的sr
+        data, sr = librosa.load(file, sr=aim_sr)
     else:
         data, sr = soundfile.read(file)
 
-    if len(data.shape) == 2:  # 双声道
-        data = data[:, 0]  # 只要第一个声道
+    if len(data.shape) == 2:  # multi-channel
+        data = data[:, 0]  # only use the first channel
 
-    # 然后再切换sr,因为soundfile可能读取出一个双通道的东西
     if sr != aim_sr:
         data = resampy.resample(data, sr, aim_sr)
     return data

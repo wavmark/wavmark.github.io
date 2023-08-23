@@ -1,11 +1,6 @@
-import pdb
-import time
-import os
-from utils import wm_add_v2, file_reader, model_util, wm_decode_v2, bin_util, my_parser, metric_util, path_util
+from utils import wm_add_util, file_reader, wm_decode_util, my_parser, metric_util, path_util
 from models import my_model
 import torch
-import uuid
-import datetime
 import numpy as np
 import soundfile
 from huggingface_hub import hf_hub_download
@@ -26,11 +21,12 @@ def load_model():
 def add_watermark(signal, audio_length_second, watermark_text):
     watermark_npy = np.array([int(i) for i in watermark_text])
 
-    pattern_bit = wm_add_v2.fix_pattern[0:args.pattern_bit_length]
+    pattern_bit = wm_add_util.fix_pattern[0:args.pattern_bit_length]
 
     watermark = np.concatenate([pattern_bit, watermark_npy])
     assert len(watermark) == 32
-    signal_wmd, info = wm_add_v2.add_watermark(watermark, signal, 16000, 0.1, device, model, args.min_snr, args.max_snr)
+    signal_wmd, info = wm_add_util.add_watermark(watermark, signal, 16000, 0.1, device, model, args.min_snr,
+                                                 args.max_snr)
     info["snr"] = metric_util.signal_noise_ratio(signal, signal_wmd)
     path_util.mk_parent_dir_if_necessary(args.output)
     soundfile.write(args.output, signal_wmd, 16000)
@@ -38,7 +34,7 @@ def add_watermark(signal, audio_length_second, watermark_text):
     print("Audio Length:%ds,Time Cost:%ds, Speed:x%.1f" % (audio_length_second, info["time_cost"],
                                                            audio_length_second / info["time_cost"]))
 
-    print("Added %d watermark sections, skipped %d muted sections" % (
+    print("Added %d watermark segments, skipped %d muted segments" % (
         info["encoded_sections"], info["skip_sections"]))
 
     if info["encoded_sections"] == 0:
@@ -47,8 +43,8 @@ def add_watermark(signal, audio_length_second, watermark_text):
 
 def decode_watermark(signal, audio_length_second):
     len_start_bit = args.pattern_bit_length
-    start_bit = wm_add_v2.fix_pattern[0:len_start_bit]
-    mean_result, info = wm_decode_v2.extract_watermark_v3_batch(
+    start_bit = wm_add_util.fix_pattern[0:len_start_bit]
+    mean_result, info = wm_decode_util.extract_watermark_v3_batch(
         signal,
         start_bit,
         0.1,
@@ -65,9 +61,10 @@ def decode_watermark(signal, audio_length_second):
     payload = mean_result[len_start_bit:]
     payload_str = "".join([str(i) for i in payload])
     print("Decoded Result:", payload_str)
-    print("This result is found in the following time point:")
-    for obj in info["results"]:
-        print("%.1fs" % obj["start_time_position"])
+    # print("This result is found in the following time point:")
+    # for obj in info["results"]:
+    #     print("%.1fs" % obj["start_time_position"])
+    print("This result is found in %d positions:" % len(info["results"]))
 
 
 if __name__ == "__main__":

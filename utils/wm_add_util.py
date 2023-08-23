@@ -15,26 +15,22 @@ fix_pattern = [1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0,
 
 def add_watermark(bit_arr, data, num_point, shift_range, device, model, min_snr, max_snr):
     t1 = time.time()
-    # 1.获得区块大小
+
     chunk_size = num_point + int(num_point * shift_range)
+    num_segments = int(len(data) / chunk_size)
+    len_remain = len(data) - num_segments * chunk_size
 
     output_chunks = []
     encoded_sections = 0
     skip_sections = 0
-    idx_trunck = -1
-    # for i in range(0, len(data), chunk_size):
-    for i in tqdm.tqdm(range(0, len(data), chunk_size), desc="Processing"):
-        idx_trunck += 1
-        current_chunk = data[i:i + chunk_size].copy()
-        # 最后一块，长度不足
-        if len(current_chunk) < chunk_size:
-            output_chunks.append(current_chunk)
-            break
 
-        # 处理区块: [水印区|间隔区]
+    for i in tqdm.tqdm(range(num_segments), desc="Processing"):
+        start_point = i * chunk_size
+        current_chunk = data[start_point:start_point + chunk_size].copy()
+        # [watermark_segment | shift_area ]
         current_chunk_cover_area = current_chunk[0:num_point]
         current_chunk_shift_area = current_chunk[num_point:]
-        current_chunk_cover_area_wmd, state = encode_trunck_with_snr_check(idx_trunck, current_chunk_cover_area,
+        current_chunk_cover_area_wmd, state = encode_trunck_with_snr_check(i, current_chunk_cover_area,
                                                                            bit_arr,
                                                                            device, model, min_snr, max_snr)
 
@@ -48,7 +44,11 @@ def add_watermark(bit_arr, data, num_point, shift_range, device, model, min_snr,
         output_chunks.append(output)
 
     assert len(output_chunks) > 0
+    if len_remain > 0:
+        output_chunks.append(data[len(data) - len_remain:])
+
     reconstructed_array = np.concatenate(output_chunks)
+
     time_cost = time.time() - t1
 
     info = {
