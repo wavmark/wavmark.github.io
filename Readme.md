@@ -1,6 +1,6 @@
 # WavMark Demo
 
-Our model enables encoding 32 bits information into a 1-second audio while maintain high invisibility and  robustness. Here we provide a simple demo to show the most basic application.
+Our model enables encoding 32 bits of information into 1-second audio while maintaining high inaudibility and robustness. Here we provide a demo to showcase the most basic application.
 
 
 
