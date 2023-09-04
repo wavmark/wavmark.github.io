@@ -24,7 +24,7 @@ array_str = "".join([str(i) for i in array])
 
 ## Decode Watermark
 
-`python wavmark.py --mode=extract --input=<the watermarked audio>`
+`python wavmark.py --mode=decode --input=<the watermarked audio>`
 
 
 ## Install
