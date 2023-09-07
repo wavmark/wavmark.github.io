@@ -1,36 +1,19 @@
 from utils import wm_add_util, file_reader, wm_decode_util, my_parser, metric_util, path_util
-from models import my_model
 import torch
 import numpy as np
 import soundfile
-from huggingface_hub import hf_hub_download
-
-
-def load_model():
-    resume_path = hf_hub_download(repo_id="M4869/WavMark",
-                                  filename="step59000_snr39.99_pesq4.35_BERP_none0.30_mean1.81_std1.81.model.pkl",
-                                  )
-    model = my_model.Model(16000, num_bit=32, n_fft=1000, hop_length=400, num_layers=8).to(device)
-    checkpoint = torch.load(resume_path, map_location=torch.device('cpu'))
-    model_ckpt = checkpoint
-    model.load_state_dict(model_ckpt, strict=True)
-    model.eval()
-    return model
+from utils import model_util, prob_util
+import math
 
 
 def add_watermark(signal, audio_length_second, watermark_text):
-    watermark_npy = np.array([int(i) for i in watermark_text])
-
-    pattern_bit = wm_add_util.fix_pattern[0:args.pattern_bit_length]
-
-    watermark = np.concatenate([pattern_bit, watermark_npy])
+    watermark = np.array([int(i) for i in watermark_text])
     assert len(watermark) == 32
     signal_wmd, info = wm_add_util.add_watermark(watermark, signal, 16000, 0.1, device, model, args.min_snr,
                                                  args.max_snr)
     info["snr"] = metric_util.signal_noise_ratio(signal, signal_wmd)
     path_util.mk_parent_dir_if_necessary(args.output)
     soundfile.write(args.output, signal_wmd, 16000)
-
     print("Audio Length:%ds,Time Cost:%ds, Speed:x%.1f" % (audio_length_second, info["time_cost"],
                                                            audio_length_second / info["time_cost"]))
 
@@ -41,12 +24,24 @@ def add_watermark(signal, audio_length_second, watermark_text):
         print("Warning! No watermarked added!! You can setup a lower min_snr value")
 
 
-def decode_watermark(signal, audio_length_second):
-    len_start_bit = args.pattern_bit_length
-    start_bit = wm_add_util.fix_pattern[0:len_start_bit]
-    mean_result, info = wm_decode_util.extract_watermark(
+def calculate_probability(bit_length, not_equal_count):
+    total_cases = 2 ** (bit_length * 2)
+
+    combinations = math.comb(bit_length, not_equal_count)
+
+    equal_cases = combinations * (2 ** not_equal_count) * (2 ** (bit_length - not_equal_count))
+
+    probability = equal_cases / total_cases
+    return probability
+
+
+def decode_watermark(signal, audio_length_second, watermark_text):
+    watermark = np.array([int(i) for i in watermark_text])
+    assert len(watermark) == 32
+
+    info = wm_decode_util.extract_watermark_v2(
         signal,
-        start_bit,
+        watermark,
         0.1,
         16000,
         model,
@@ -54,17 +49,15 @@ def decode_watermark(signal, audio_length_second):
     print("Audio length:%ds, Time Cost:%ds, Speed:x%.1f" % (audio_length_second, info["time_cost"],
                                                             audio_length_second / info["time_cost"]))
 
-    if mean_result is None:
+    results = info["results"]
+    if len(results) == 0:
         print("No Watermark Found")
         return
 
-    payload = mean_result[len_start_bit:]
-    payload_str = "".join([str(i) for i in payload])
-    print("Decoded Result:", payload_str)
-    # print("This result is found in the following time point:")
-    # for obj in info["results"]:
-    #     print("%.1fs" % obj["start_time_position"])
-    print("This result is found in %d positions:" % len(info["results"]))
+    # sort...
+    results.sort(key=lambda x: x['prob'])
+    results_0 = results[0]
+    print("以%f的出错概率认定音频中存在水印" % results_0['prob'])
 
 
 if __name__ == "__main__":
@@ -73,23 +66,15 @@ if __name__ == "__main__":
         "mode": "encode",  # encode\decode
         "input": "",
         "output": "",
-        "watermark": "0010101010100111",
-
-        "pattern_bit_length": 16,
-
-        # if the watermarked audio has SNR > max_snr, we think the watermark is insufficient and perform "Repeated Encoding"
+        "watermark": "00111111100101101111110101110100",
         "max_snr": 38,
-
-        # if the watermarked audio has SNR < min_snr, we think it affects perception, thus skip this section
         "min_snr": 20,
-
         "decode_batch_size": 10,
-
         "min_time_length": 4,
     })
     args = parser.parse()
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model = load_model()
+    model = model_util.load_model(device)
     assert args.mode in ["encode", "decode"], "wrong mode"
 
     # input check
@@ -99,16 +84,13 @@ if __name__ == "__main__":
 
     # watermark check
     watermark_text = args.watermark
-    if len(watermark_text) > 0 or args.mode == "encode":
-        payload_length = 32 - args.pattern_bit_length
-        assert len(watermark_text) == payload_length, "watermark length should be %d, current is %d" \
-                                                      % (payload_length, len(watermark_text))
-        assert set(watermark_text) == {'1', '0'}, "watermark should only has 0 and 1"
+    assert len(watermark_text) == 32, "watermark length should be %d, current is %d" \
+                                      % (32, len(watermark_text))
+    assert set(watermark_text) == {'1', '0'}, "watermark should only has 0 and 1"
 
     if args.mode == "encode":
-        # output check
         assert len(args.output) > 0, "you should setup an output path"
         assert args.output.lower().endswith(".wav"), "output should be a .wav filename"
         add_watermark(signal, audio_length_second, args.watermark)
     elif args.mode == "decode":
-        decode_watermark(signal, audio_length_second)
+        decode_watermark(signal, audio_length_second, args.watermark)
